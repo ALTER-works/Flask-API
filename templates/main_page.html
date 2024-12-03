@@ -1,10 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Погода в городе</title>
 </head>
 <body>
+    <h1>Погода в городе</h1>
+    <form method="POST">
+        <input type="text" name="city" placeholder="Введите город" required>
+        <button type="submit">Получить погоду</button>
+    </form>
 
+    {% if weather_info %}
+        {% if weather_info.error %}
+            <p>{{ weather_info.error }}</p>
+        {% else %}
+            <h2>Текущая погода в {{ weather_info['LocalizedName'] }}:</h2>
+            <p>Температура: {{ weather_info['Temperature']['Metric']['Value'] }}°C</p>
+            <p>Состояние: {{ weather_info['WeatherText'] }}</p>
+        {% endif %}
+    {% endif %}
 </body>
 </html>
