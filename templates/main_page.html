@@ -3,45 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Погода в городе</title>
-    <!-- Bootstrap CSS -->
+    <title>Погода на маршруте</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
         body {
-            background-color: #f8f9fa;
+            margin: 0; /* Убираем отступы */
+            height: 100vh; /* Полная высота */
+            display: flex; /* Используем флексбокс для компоновки */
         }
-        .container {
-            margin-top: 50px;
-            padding: 20px;
-            border-radius: 10px;
+        .map-container {
+            flex: 1; /* Занимает оставшееся пространство */
+            padding: 0; /* Без отступов */
+        }
+        .form-container {
+            width: 300px; /* Фиксированная ширина для формы */
+            padding: 20px; /* Отступы вокруг формы */
             background-color: white;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column; /* Вертикальная компоновка элементов формы */
+            justify-content: center; /* Центрируем элементы по вертикали */
         }
         h1 {
-            color: #343a40;
+            font-size: 24px; /* Увеличиваем размер заголовка */
+            margin-bottom: 20px; /* Отступ снизу */
+            text-align: center; /* Центрируем заголовок */
         }
-        .weather-info {
-            margin-top: 20px;
+        .form-group {
+            margin-bottom: 15px; /* Отступ между полями ввода */
+        }
+        #map {
+            height: 100%; /* Полная высота карты */
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="text-center">Погода на маршруте</h1>
-        <form method="POST" class="form-inline justify-content-center">
-            <input type="text" name="city" class="form-control mr-2" placeholder="Введите город" required>
-            <input type="text" name="city2" class="form-control mr-2" placeholder="Введите город" required>
-            <button type="submit" class="btn btn-primary">Получить погоду</button>
+    <div class="map-container">
+        <div id="map"></div> <!-- Карта занимает всю левую половину -->
+    </div>
+    <div class="form-container">
+        <h1>Погода на маршруте</h1>
+        <form method="POST">
+            <div class="form-group">
+                <input type="text" name="city" class="form-control" placeholder="Введите город" required>
+            </div>
+            <div class="form-group">
+                <input type="text" name="city2" class="form-control" placeholder="Введите город" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Получить погоду</button> <!-- Кнопка занимает всю ширину -->
         </form>
 
         {% if weather_info %}
-            <div class="weather-info text-center">
+            <div class="weather-info text-center mt-3">
                 {% if weather_info.error %}
-                    <div class="alert alert-danger mt-3">{{ weather_info.error }}</div>
+                    <div class="alert alert-danger">{{ weather_info.error }}</div>
                 {% else %}
                     <h2>Текущая погода в {{ weather_info[0]['LocalizedName'] }}:</h2>
                     <p>Температура: {{ weather_info[0]['Temperature']['Metric']['Value'] }}°C</p>
                     <p>Состояние: {{ weather_info[0]['WeatherText'] }}</p>
+
                     <h2>Текущая погода в {{ weather_info[1]['LocalizedName'] }}:</h2>
                     <p>Температура: {{ weather_info[1]['Temperature']['Metric']['Value'] }}°C</p>
                     <p>Состояние: {{ weather_info[1]['WeatherText'] }}</p>
@@ -50,7 +71,34 @@
         {% endif %}
     </div>
 
-    <!-- Bootstrap JS and dependencies (optional) -->
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Инициализация карты
+        var map = L.map('map').setView([55.7558, 37.6173], 5); // Центр по умолчанию (Москва)
+
+        // Добавление тайлов OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Добавление маркеров для каждого города
+        {% if weather_info %}
+            var city1 = [{{ weather_info[0]['GeoPosition']['Latitude'] }}, {{ weather_info[0]['GeoPosition']['Longitude'] }}];
+            var city2 = [{{ weather_info[1]['GeoPosition']['Latitude'] }}, {{ weather_info[1]['GeoPosition']['Longitude'] }}];
+
+            // Маркер для города 1
+            var marker1 = L.marker(city1).addTo(map)
+                .bindPopup("<b>{{ weather_info[0]['LocalizedName'] }}</b><br>Температура: {{ weather_info[0]['Temperature']['Metric']['Value'] }}°C<br>Состояние: {{ weather_info[0]['WeatherText'] }}")
+                .openPopup();
+
+            // Маркер для города 2
+            var marker2 = L.marker(city2).addTo(map)
+                .bindPopup("<b>{{ weather_info[1]['LocalizedName'] }}</b><br>Температура: {{ weather_info[1]['Temperature']['Metric']['Value'] }}°C<br>Состояние: {{ weather_info[1]['WeatherText'] }}");
+        {% endif %}
+    </script>
+
+    <!-- Bootstrap JS и зависимости (по желанию) -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
