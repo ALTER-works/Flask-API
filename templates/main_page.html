@@ -30,6 +30,7 @@
         <h1 class="text-center">Погода в городе</h1>
         <form method="POST" class="form-inline justify-content-center">
             <input type="text" name="city" class="form-control mr-2" placeholder="Введите город" required>
+            <input type="text" name="city2" class="form-control mr-2" placeholder="Введите город" required>
             <button type="submit" class="btn btn-primary">Получить погоду</button>
         </form>
 
@@ -38,9 +39,12 @@
                 {% if weather_info.error %}
                     <div class="alert alert-danger mt-3">{{ weather_info.error }}</div>
                 {% else %}
-                    <h2>Текущая погода в {{ weather_info['LocalizedName'] }}:</h2>
-                    <p>Температура: {{ weather_info['Temperature']['Metric']['Value'] }}°C</p>
-                    <p>Состояние: {{ weather_info['WeatherText'] }}</p>
+                    <h2>Текущая погода в {{ weather_info[0]['LocalizedName'] }}:</h2>
+                    <p>Температура: {{ weather_info[0]['Temperature']['Metric']['Value'] }}°C</p>
+                    <p>Состояние: {{ weather_info[0]['WeatherText'] }}</p>
+                    <h2>Текущая погода в {{ weather_info[1]['LocalizedName'] }}:</h2>
+                    <p>Температура: {{ weather_info[1]['Temperature']['Metric']['Value'] }}°C</p>
+                    <p>Состояние: {{ weather_info[1]['WeatherText'] }}</p>
                 {% endif %}
             </div>
         {% endif %}
