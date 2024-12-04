@@ -4,7 +4,7 @@ from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
-api_key = "G6K81pyXN2A1tDA5HFV8SUr5sdbarQ24"
+api_key = "2NwSGCWmrV9N2kmpfE7iHkilAkRkBNeG"
 
 def translate(s, lng):
     return GT(source='auto', target=f'{lng}').translate(s)
@@ -69,4 +69,4 @@ def main():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()

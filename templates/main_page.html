@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Погода на маршруте</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Insert your API key here -->
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=2a4d1246-7677-4d06-8a03-85ea2273c9ac" type="text/javascript"></script>
     <style>
         body {
             margin: 0; /* Убираем отступы */
@@ -40,7 +41,7 @@
 </head>
 <body>
     <div class="map-container">
-        <div id="map"></div> <!-- Карта занимает всю левую половину -->
+        <div id="map" style="height: 100%;"></div> <!-- Карта занимает всю левую половину -->
     </div>
     <div class="form-container">
         <h1>Погода на маршруте</h1>
@@ -59,11 +60,11 @@
                 {% if weather_info.error %}
                     <div class="alert alert-danger">{{ weather_info.error }}</div>
                 {% else %}
-                    <h2>Текущая погода в {{ weather_info[0]['LocalizedName'] }}:</h2>
+                    <h2>{{ weather_info[0]['LocalizedName'] }}. Текущая погода:</h2>
                     <p>Температура: {{ weather_info[0]['Temperature']['Metric']['Value'] }}°C</p>
                     <p>Состояние: {{ weather_info[0]['WeatherText'] }}</p>
 
-                    <h2>Текущая погода в {{ weather_info[1]['LocalizedName'] }}:</h2>
+                    <h2>{{ weather_info[1]['LocalizedName'] }}. Текущая погода:</h2>
                     <p>Температура: {{ weather_info[1]['Temperature']['Metric']['Value'] }}°C</p>
                     <p>Состояние: {{ weather_info[1]['WeatherText'] }}</p>
                 {% endif %}
@@ -71,31 +72,32 @@
         {% endif %}
     </div>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        // Инициализация карты
-        var map = L.map('map').setView([55.7558, 37.6173], 5); // Центр по умолчанию (Москва)
+        // Инициализация карты Yandex без лишних элементов
+        ymaps.ready(init);
+        function init() {
+            var map = new ymaps.Map('map', {
+                center: [55.7558, 37.6173], // Центр по умолчанию (Москва)
+                zoom: 5,
+                controls: [] // Убираем все элементы управления
+            });
 
-        // Добавление тайлов OpenStreetMap
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-        }).addTo(map);
+            // Добавление маркеров для каждого города
+            {% if weather_info %}
+                var city1 = [{{ weather_info[0]['GeoPosition']['Latitude'] }}, {{ weather_info[0]['GeoPosition']['Longitude'] }}];
+                var city2 = [{{ weather_info[1]['GeoPosition']['Latitude'] }}, {{ weather_info[1]['GeoPosition']['Longitude'] }}];
 
-        // Добавление маркеров для каждого города
-        {% if weather_info %}
-            var city1 = [{{ weather_info[0]['GeoPosition']['Latitude'] }}, {{ weather_info[0]['GeoPosition']['Longitude'] }}];
-            var city2 = [{{ weather_info[1]['GeoPosition']['Latitude'] }}, {{ weather_info[1]['GeoPosition']['Longitude'] }}];
+                var placemark1 = new ymaps.Placemark(city1, {
+                    balloonContent: "<b>{{ weather_info[0]['LocalizedName'] }}</b><br>Температура: {{ weather_info[0]['Temperature']['Metric']['Value'] }}°C<br>Состояние: {{ weather_info[0]['WeatherText'] }}"
+                });
+                map.geoObjects.add(placemark1);
 
-            // Маркер для города 1
-            var marker1 = L.marker(city1).addTo(map)
-                .bindPopup("<b>{{ weather_info[0]['LocalizedName'] }}</b><br>Температура: {{ weather_info[0]['Temperature']['Metric']['Value'] }}°C<br>Состояние: {{ weather_info[0]['WeatherText'] }}")
-                .openPopup();
-
-            // Маркер для города 2
-            var marker2 = L.marker(city2).addTo(map)
-                .bindPopup("<b>{{ weather_info[1]['LocalizedName'] }}</b><br>Температура: {{ weather_info[1]['Temperature']['Metric']['Value'] }}°C<br>Состояние: {{ weather_info[1]['WeatherText'] }}");
-        {% endif %}
+                var placemark2 = new ymaps.Placemark(city2, {
+                    balloonContent: "<b>{{ weather_info[1]['LocalizedName'] }}</b><br>Температура: {{ weather_info[1]['Temperature']['Metric']['Value'] }}°C<br>Состояние: {{ weather_info[1]['WeatherText'] }}"
+                });
+                map.geoObjects.add(placemark2);
+            {% endif %}
+        }
     </script>
 
     <!-- Bootstrap JS и зависимости (по желанию) -->
