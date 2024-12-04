@@ -1,9 +1,10 @@
 import requests
+from deep_translator import GoogleTranslator as GT
 from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
-api_key = "xsGOxlAy53813mGLg6xuY052ZWX2juwW"
+api_key = "GRWpt0MH0CQnYoQXDqfMw1GrM0PT3u9f"
 
 def get_location_key(city):
     # URL для поиска местоположения
@@ -16,6 +17,8 @@ def get_location_key(city):
             return location_data[0]['Key']  # Возвращаем ключ местоположения
     return None
 
+def translate(s, lng):
+    return GT(source='auto', target=f'{lng}').translate(s)
 
 def get_current_weather(location_key, location_key2):
     # URL для получения текущей погоды
@@ -36,16 +39,16 @@ def main():
     weather_info2 = None
     all_info = None
     if request.method == 'POST':
-        city = request.form['city']
-        city2 = request.form['city2']
+        city = translate(request.form['city'], 'en')
+        city2 = translate(request.form['city2'], 'en')
         location_key = get_location_key(city)
         location_key2 = get_location_key(city2)
         if location_key and location_key2:
             all_info = get_current_weather(location_key, location_key2)
             weather_info = all_info[0]
-            weather_info['LocalizedName'] = city
+            weather_info['LocalizedName'] = 'Пункт 1'
             weather_info2 = all_info[1]
-            weather_info2['LocalizedName'] = city2
+            weather_info2['LocalizedName'] = 'Пункт 2'
             all_info = [weather_info, weather_info2]
             print(weather_info)
         else:
