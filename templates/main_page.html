@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Погода на маршруте</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Insert your API key here -->
     <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=2a4d1246-7677-4d06-8a03-85ea2273c9ac" type="text/javascript"></script>
     <style>
         body {
@@ -34,6 +33,27 @@
         .form-group {
             margin-bottom: 15px; /* Отступ между полями ввода */
         }
+        .my-balloon {
+            display: inline-block;
+            padding: 4px 10px;
+            height: 75px;
+            position: relative;
+            bottom: 80px;
+            left: -10px;
+            width: 158px;
+            font-size: 11px;
+            line-height: 15px;
+            color: #333333;
+            text-align: left;
+            vertical-align: middle;
+            background-color: #FFFFF6;
+            border: 1px solid #CDB7B5;
+            border-radius: 6px;
+            font-family: Arial;
+        }
+        .close {
+            margin-top: -3px;
+        }
         #map {
             height: 100%; /* Полная высота карты */
         }
@@ -44,13 +64,13 @@
         <div id="map" style="height: 100%;"></div> <!-- Карта занимает всю левую половину -->
     </div>
     <div class="form-container">
-        <h1>Погода на маршруте</h1>
+        <h1>Введите свой маршрут</h1>
         <form method="POST">
             <div class="form-group">
-                <input type="text" name="city" class="form-control" placeholder="Введите город" required>
+                <input type="text" name="city" class="form-control" placeholder="Откуда" required>
             </div>
             <div class="form-group">
-                <input type="text" name="city2" class="form-control" placeholder="Введите город" required>
+                <input type="text" name="city2" class="form-control" placeholder="Куда" required>
             </div>
             <button type="submit" class="btn btn-primary btn-block">Получить погоду</button> <!-- Кнопка занимает всю ширину -->
         </form>
@@ -82,7 +102,7 @@
                 controls: [] // Убираем все элементы управления
             });
 
-            // Добавление маркеров для каждого города
+            // Добавление маркеров для каждого города и маршрута
             {% if weather_info %}
                 var city1 = [{{ weather_info[0]['GeoPosition']['Latitude'] }}, {{ weather_info[0]['GeoPosition']['Longitude'] }}];
                 var city2 = [{{ weather_info[1]['GeoPosition']['Latitude'] }}, {{ weather_info[1]['GeoPosition']['Longitude'] }}];
@@ -90,12 +110,32 @@
                 var placemark1 = new ymaps.Placemark(city1, {
                     balloonContent: "<b>{{ weather_info[0]['LocalizedName'] }}</b><br>Температура: {{ weather_info[0]['Temperature']['Metric']['Value'] }}°C<br>Состояние: {{ weather_info[0]['WeatherText'] }}"
                 });
-                map.geoObjects.add(placemark1);
 
                 var placemark2 = new ymaps.Placemark(city2, {
                     balloonContent: "<b>{{ weather_info[1]['LocalizedName'] }}</b><br>Температура: {{ weather_info[1]['Temperature']['Metric']['Value'] }}°C<br>Состояние: {{ weather_info[1]['WeatherText'] }}"
                 });
-                map.geoObjects.add(placemark2);
+
+                var multiRoute = new ymaps.multiRouter.MultiRoute({
+                    referencePoints: [city1, city2],
+                }, {
+                    routeStrokeColor: "000088",
+                    routeActiveStrokeColor: "ff0000",
+                    pinIconFillColor: "ff0000",
+                    boundsAutoApply: true,
+                    zoomMargin: 30,
+                    // Добавляем настройки для отображения балунов
+                    wayPointStartIconLayout: ymaps.templateLayoutFactory.createClass(
+                        "<div class='my-balloon'>Расстояние:"+
+                        "Проверка"+
+                        ""+
+                        "</div>"
+                    ),
+                    wayPointFinishIconLayout: ymaps.templateLayoutFactory.createClass(
+                        '<div class="my-balloon">Конец маршрута</div>'
+                    )
+                });
+
+                map.geoObjects.add(multiRoute);
             {% endif %}
         }
     </script>
