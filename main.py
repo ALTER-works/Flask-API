@@ -42,8 +42,8 @@ def get_current_weather(location_key, location_key2):
 def main():
     all_info = None
     if request.method == 'POST':
-        city = translate(request.form['city'], 'en')
-        city2 = translate(request.form['city2'], 'en')
+        city = request.form['city']
+        city2 = request.form['city2']
 
         location_data = get_location_key(city)
         location_data2 = get_location_key(city2)
