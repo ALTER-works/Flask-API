@@ -36,11 +36,11 @@
         .my-balloon {
             display: inline-block;
             padding: 4px 10px;
-            height: 75px;
+            height: 60px;
             position: relative;
             bottom: 80px;
             left: -10px;
-            width: 158px;
+            width: 180px;
             font-size: 11px;
             line-height: 15px;
             color: #333333;
@@ -80,13 +80,12 @@
                 {% if weather_info.error %}
                     <div class="alert alert-danger">{{ weather_info.error }}</div>
                 {% else %}
-                    <h2>{{ weather_info[0]['LocalizedName'] }}. Текущая погода:</h2>
-                    <p>Температура: {{ weather_info[0]['Temperature']['Metric']['Value'] }}°C</p>
-                    <p>Состояние: {{ weather_info[0]['WeatherText'] }}</p>
-
-                    <h2>{{ weather_info[1]['LocalizedName'] }}. Текущая погода:</h2>
-                    <p>Температура: {{ weather_info[1]['Temperature']['Metric']['Value'] }}°C</p>
-                    <p>Состояние: {{ weather_info[1]['WeatherText'] }}</p>
+                    <h2>Оценка погоды:</h2>
+                    {% if weather_info[0]['WeatherText'] in bad_weather_states %}
+                        <br>Ехать не стоит<br>
+                    {% else %}
+                        <br>Можно ехать<br>
+                    {% endif %}
                 {% endif %}
             </div>
         {% endif %}
@@ -125,13 +124,18 @@
                     zoomMargin: 30,
                     // Добавляем настройки для отображения балунов
                     wayPointStartIconLayout: ymaps.templateLayoutFactory.createClass(
-                        "<div class='my-balloon'>Расстояние:"+
-                        "Проверка"+
-                        ""+
+                        "<div class='my-balloon'>"+
+                        "<b>{{ weather_info[0]['LocalizedName'] }}</b>"+
+                        "<br>Температура: {{ weather_info[0]['Temperature']['Metric']['Value'] }}°C"+
+                        "<br>Состояние: {{ weather_info[0]['WeatherText'] }}"+
                         "</div>"
                     ),
                     wayPointFinishIconLayout: ymaps.templateLayoutFactory.createClass(
-                        '<div class="my-balloon">Конец маршрута</div>'
+                        "<div class='my-balloon'>"+
+                        "<b>{{ weather_info[1]['LocalizedName'] }}</b>"+
+                        "<br>Температура: {{ weather_info[1]['Temperature']['Metric']['Value'] }}°C"+
+                        "<br>Состояние: {{ weather_info[1]['WeatherText'] }}"+
+                        "</div>"
                     )
                 });
 
